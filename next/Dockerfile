@@ -1,0 +1,5 @@
+ARG NODE_VERSION=23.0.0
+
+FROM node:${NODE_VERSION}-bullseye-slim
+
+WORKDIR /app
