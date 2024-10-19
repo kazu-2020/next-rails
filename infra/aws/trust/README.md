@@ -16,7 +16,7 @@ https://zenn.dev/sikmi_tech/articles/9f302b95105f50#terraform-cloud-%E4%B8%8A%E3
 terraform.tfvars.example ファイルを以下のコマンドでコピーして、ファイル内の内容を適宜修正してください。
 
 ```sh
-cp terraform.tfvars.example terraform.tefvars
+cp terraform.tfvars.example terraform.tfvars
 ```
 
 ローカルにて、aws sso コマンドにてログインを行います。
@@ -29,6 +29,7 @@ export AWS_PROFILE=<your profile>
 terraform コマンドにて、リソースを作成します。
 
 ```sh
+terraform init
 terraform apply
 ```
 
@@ -55,3 +56,61 @@ role_arn = "arn:aws:iam::xxxxxxx:role/terraform-cloud"
 | TFC_AWS_RUN_ROLE_ARN  | 手元に控えておいた IAM ロールの ARN |
 
 参考: https://zenn.dev/sikmi_tech/articles/9f302b95105f50#terraform-cloud-%E3%81%AB%E7%92%B0%E5%A2%83%E5%A4%89%E6%95%B0%E3%82%92%E8%A8%AD%E5%AE%9A%E3%81%99%E3%82%8B
+
+### 3. 動作確認
+
+最後に、terraform cloud によるリソース管理が期待通りに動くかを確認します。
+
+下記のコマンドを実施して、terraform cloud との認証を行います。
+
+```sh
+terraform login
+```
+
+> [!IMPORTANT]
+> ログイン時、API キーを払い出す必要がありますが、有効期限は 1 日と短くしてください。(できれば、動作確認後に API キーを削除してください)
+>
+> 実際のリソース管理は、Github Application を利用した CI/CD によるリソース管理を想定しているためです。
+
+認証に完了後、`aws/environment` 配下に任意のディクレトリを配置して、main.tf ファイルを作成します。
+
+```sh
+# イメージ
+├── environment
+│   └── prod
+│       └── main.tf
+```
+
+main.tf に以下の内容を設定してください。また、コメントされている 2 箇所に適当な値を設定してください。
+
+```hcl:main.tf
+terraform {
+  cloud {
+    # terraform cloud の組織名を設定してください
+    organization = "xxxxxx"
+
+    # terraform cloud のワークスペース名
+    workspaces {
+      name = "xxxxxx"
+    }
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "5.56.1"
+    }
+  }
+}
+
+provider "aws" {
+  region = "ap-northeast-1"
+}
+```
+
+最後に、terraform apply コマンドを実行して、エラーが出なければ動作確認は完了です!
+
+```sh
+terraform init
+terraform apply
+```
