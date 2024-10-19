@@ -1,0 +1,3 @@
+terraform_cloud_workspace    = "terraform cloud へ作成したワークスペース名"
+terraform_cloud_project      = "ワークスペースが所属するプロジェクト名"
+terraform_cloud_organization = "ワークスペースが所属する組織名"
