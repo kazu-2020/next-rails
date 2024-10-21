@@ -48,22 +48,23 @@ resource "aws_lb" "primary" {
 ####################
 # Listener
 ####################
-# TODO: 443 port を開ける際、ACM の証明書が必要なため、一旦コメントアウト
-# resource "aws_lb_listener" "allow_tls" {
-#   load_balancer_arn = aws_lb.primary.arn
+resource "aws_lb_listener" "allow_tls" {
+  load_balancer_arn = aws_lb.primary.arn
 
-#   protocol = "HTTPS"
-#   port     = 443
+  protocol = "HTTPS"
+  port     = 443
 
-#   default_action {
-#     type             = "forward"
-#     target_group_arn = aws_alb_target_group.send_to_fargate.arn
-#   }
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_alb_target_group.send_to_fargate.arn
+  }
 
-#   tags = {
-#     Name = "allowTLS"
-#   }
-# }
+  certificate_arn = aws_acm_certificate.cert.arn
+
+  tags = {
+    Name = "allowTLS"
+  }
+}
 
 ####################
 # Target Group
