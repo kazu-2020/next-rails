@@ -51,15 +51,14 @@ resource "aws_lb" "primary" {
 resource "aws_lb_listener" "allow_tls" {
   load_balancer_arn = aws_lb.primary.arn
 
-  protocol = "HTTPS"
-  port     = 443
+  protocol        = "HTTPS"
+  port            = 443
+  certificate_arn = aws_acm_certificate.cert.arn
 
   default_action {
     type             = "forward"
     target_group_arn = aws_alb_target_group.send_to_fargate.arn
   }
-
-  certificate_arn = aws_acm_certificate.cert.arn
 
   tags = {
     Name = "allowTLS"
