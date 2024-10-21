@@ -2,6 +2,10 @@ resource "aws_vpc" "main" {
   cidr_block           = "192.168.0.0/20"
   enable_dns_support   = true
   enable_dns_hostnames = true
+
+  tags = {
+    Name = "main"
+  }
 }
 
 resource "aws_internet_gateway" "main" {
@@ -21,7 +25,7 @@ resource "aws_subnet" "public_alb_primary" {
   cidr_block        = "192.168.0.0/25"
 
   tags = {
-    Name   = "public_alb_primary"
+    Name   = "publicAlbPrimary"
     Public = true
   }
 }
@@ -32,7 +36,7 @@ resource "aws_subnet" "public_alb_secondary" {
   cidr_block        = "192.168.0.128/25"
 
   tags = {
-    Name   = "public_alb_secondary"
+    Name   = "publicAlbSecondary"
     Public = true
   }
 }
@@ -42,7 +46,7 @@ resource "aws_subnet" "public_app_primary" {
   availability_zone = "ap-northeast-1a"
   cidr_block        = "192.168.1.0/25"
   tags = {
-    Name   = "public_app_primary"
+    Name   = "publicAppPrimary"
     Public = true
   }
 }
@@ -53,7 +57,7 @@ resource "aws_subnet" "public_app_secondary" {
   cidr_block        = "192.168.1.128/25"
 
   tags = {
-    Name   = "public_app_secondary"
+    Name   = "publicAppSecondary"
     Public = true
   }
 }
