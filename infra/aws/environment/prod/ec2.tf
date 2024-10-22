@@ -80,7 +80,7 @@ resource "aws_lb_listener" "allow_tls" {
 
   default_action {
     type             = "forward"
-    target_group_arn = aws_alb_target_group.send_to_fargate.arn
+    target_group_arn = aws_alb_target_group.send_to_nextjs.arn
   }
 
   tags = {
@@ -91,9 +91,9 @@ resource "aws_lb_listener" "allow_tls" {
 ####################
 # Target Group
 ####################
-resource "aws_alb_target_group" "send_to_fargate" {
+resource "aws_alb_target_group" "send_to_nextjs" {
   target_type      = "ip"
-  name             = "sendToFargate"
+  name             = "sendToNextjs"
   protocol         = "HTTP"
   port             = 3000
   vpc_id           = aws_vpc.main.id
