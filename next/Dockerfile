@@ -16,7 +16,10 @@ FROM base AS production-deps
 COPY package.json package-lock.json ./
 RUN --mount=type=cache,target=~/.npm,sharing=locked npm ci --omit=dev
 
-FROM development AS build
+FROM base AS build
+COPY package.json package-lock.json ./
+RUN --mount=type=cache,target=~/.npm,sharing=locked npm ci
+COPY . .
 RUN npm run build
 
 FROM base AS production
