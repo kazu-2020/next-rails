@@ -13,11 +13,28 @@ resource "aws_security_group" "allow_tls" {
 
 resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4" {
   security_group_id = aws_security_group.allow_tls.id
-  cidr_ipv4         = aws_vpc.main.cidr_block
 
   ip_protocol = "tcp"
   from_port   = 443
   to_port     = 443
+  cidr_ipv4   = "0.0.0.0/0"
+
+  tags = {
+    Name = "allowTLSIPv4"
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "allow_http_ipv4" {
+  security_group_id = aws_security_group.allow_tls.id
+
+  ip_protocol = "tcp"
+  from_port   = 80
+  to_port     = 80
+  cidr_ipv4   = "0.0.0.0/0"
+
+  tags = {
+    Name = "allowHTTPIPv4"
+  }
 }
 
 resource "aws_security_group" "allow_traffic_from_alb" {
@@ -86,6 +103,27 @@ resource "aws_lb_listener" "allow_tls" {
   tags = {
     Name = "allowTLS"
   }
+}
+
+resource "aws_lb_listener" "redirect_http_to_https" {
+  load_balancer_arn = aws_lb.primary.arn
+
+  protocol = "HTTP"
+  port     = 80
+
+  default_action {
+    type = "redirect"
+    redirect {
+      protocol    = "HTTPS"
+      port        = "443"
+      status_code = "HTTP_301"
+    }
+  }
+
+  tags = {
+    Name = "redirectHTTPToHTTPS"
+  }
+
 }
 
 ####################
