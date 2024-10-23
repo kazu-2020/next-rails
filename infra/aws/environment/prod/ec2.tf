@@ -35,8 +35,8 @@ resource "aws_vpc_security_group_ingress_rule" "allow_tls_ipv4_from_alb" {
   referenced_security_group_id = aws_security_group.allow_tls.id
 
   ip_protocol = "tcp"
-  from_port   = 443
-  to_port     = 443
+  from_port   = 3000
+  to_port     = 3000
 }
 
 resource "aws_vpc_security_group_egress_rule" "allow_all_traffic" {

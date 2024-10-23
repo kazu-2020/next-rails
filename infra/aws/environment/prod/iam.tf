@@ -2,8 +2,8 @@
 # ECS で利用する IAM ロールとポリシーを作成する
 ####################
 
-# ECR からイメージを取得するためのポリシー
-data "aws_iam_policy_document" "pull_ecr_image" {
+data "aws_iam_policy_document" "ecs_task_execution" {
+  # ECR からイメージを取得するためのポリシー
   // see: https://docs.aws.amazon.com/AmazonECR/latest/userguide/ECR_on_ECS.html
   statement {
     effect = "Allow"
@@ -19,16 +19,27 @@ data "aws_iam_policy_document" "pull_ecr_image" {
 
     resources = ["*"]
   }
+
+  statement {
+    effect = "Allow"
+
+    sid = "CloudWatchLogs"
+
+    actions = [
+      "logs:CreateLogStream",
+      " logs:PutLogEvents",
+    ]
+  }
 }
 
-resource "aws_iam_policy" "pull_ecr_image" {
-  name        = "pull_ecr_image"
-  description = "pull ecr image for ecs task"
-  policy      = data.aws_iam_policy_document.pull_ecr_image.json
+resource "aws_iam_policy" "ecs_task_execution" {
+  name        = "ECSTaskExecutionPolicy"
+  description = "ecs task execution policy for app"
+  policy      = data.aws_iam_policy_document.ecs_task_execution.json
 }
 
 # ECS タスク実行用の IAM ロール
-data "aws_iam_policy_document" "ecs_task_execution" {
+data "aws_iam_policy_document" "ecs_task_execution_assume_role" {
   statement {
     effect = "Allow"
 
@@ -42,12 +53,12 @@ data "aws_iam_policy_document" "ecs_task_execution" {
 }
 
 resource "aws_iam_role" "ecs_task_execution" {
-  name               = "ecs_task_execution"
+  name               = "ECSTaskExecutionRole"
   description        = "ECS task execution role for next.js"
-  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution.json
+  assume_role_policy = data.aws_iam_policy_document.ecs_task_execution_assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "pull_ecr_image_policy_to_ecs_task_execution" {
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_policy_to_ecs_task_execution" {
   role       = aws_iam_role.ecs_task_execution.name
-  policy_arn = aws_iam_policy.pull_ecr_image.arn
+  policy_arn = aws_iam_policy.ecs_task_execution.arn
 }
