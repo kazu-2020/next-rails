@@ -1,0 +1,67 @@
+services:
+  zitadel:
+    restart: always
+    networks:
+      - zitadel_network
+    # here: https://github.com/zitadel/zitadel/pkgs/container/zitadel
+    image: 'ghcr.io/zitadel/zitadel:v2.64.1'
+    command: 'start-from-init --masterkeyFromEnv --tlsMode disabled'
+    environment:
+      ZITADEL_DATABASE_POSTGRES_HOST: db
+      ZITADEL_DATABASE_POSTGRES_PORT: 5432
+      ZITADEL_DATABASE_POSTGRES_DATABASE: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_USERNAME: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: zitadel
+      ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+      ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: postgres
+      ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+      ZITADEL_EXTERNALSECURE: false
+      ZITADEL_MASTERKEY: MasterkeyNeedsToHave32Characters
+      ZITADEL_FIRSTINSTANCE_DEFAULTLANGUAGE: ja
+      ZITADEL_FIRSTINSTANCE_ORG_NAME: next-rails
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_USERNAME: matazou
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_FIRSTNAME: kazutaka
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_LASTNAME: mimata
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_NICKNAME: matazou_nickname
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_DISPLAYNAME: matazou_displayname
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORD: Password123!
+      ZITADEL_FIRSTINSTANCE_ORG_HUMAN_PASSWORDCHANGEREQUIRED: false
+
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - '8080:8080'
+
+  db:
+    restart: always
+    image: postgres:17-bullseye
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      # https://github.com/peter-evans/docker-compose-healthcheck/issues/16#issuecomment-1913115843
+      # pg_isready 実行時に、`FATAL:  role "root" does not exist` というエラーが出るため、
+      # それを回避するために、PGUSER を指定している
+      PGUSER: postgres
+    networks:
+      - zitadel_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready', '-d', 'zitadel', '-U', 'postgres']
+      interval: '10s'
+      timeout: '30s'
+      retries: 5
+      start_period: '20s'
+    ports:
+      - '5432:5432'
+    volumes:
+      - type: volume
+        source: next_rails_zitadel_data
+        target: /var/lib/postgresql/data
+
+networks:
+  zitadel_network:
+    driver: bridge
+
+volumes:
+  next_rails_zitadel_data:
