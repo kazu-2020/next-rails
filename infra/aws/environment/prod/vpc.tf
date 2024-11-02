@@ -62,6 +62,17 @@ resource "aws_subnet" "public_app_secondary" {
   }
 }
 
+resource "aws_subnet" "private_db_primary" {
+  vpc_id            = aws_vpc.main.id
+  availability_zone = "ap-northeast-1a"
+  cidr_block        = "192.168.2.0/25"
+
+  tags = {
+    Name   = "privateDBPrimary"
+    Public = false
+  }
+}
+
 ####################
 # Route Table
 ####################
@@ -80,6 +91,15 @@ resource "aws_route_table" "internet" {
 
   tags = {
     Name = "internet"
+  }
+}
+
+resource "aws_route_table" "internal" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = aws_vpc.main.cidr_block
+    gateway_id = "local"
   }
 }
 
@@ -102,4 +122,9 @@ resource "aws_route_table_association" "internet_with_public_app_primary" {
 resource "aws_route_table_association" "internet_with_public_app_secondary" {
   subnet_id      = aws_subnet.public_app_secondary.id
   route_table_id = aws_route_table.internet.id
+}
+
+resource "aws_route_table_association" "internal_with_private_db_primary" {
+  subnet_id      = aws_subnet.private_db_primary.id
+  route_table_id = aws_route_table.internal.id
 }
